@@ -1,6 +1,9 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { checkConnection, getPublicKey } from "@stellar/freighter-api";
 import { Wallet, PlusCircle, ShieldCheck, Landmark } from 'lucide-react';
+import LoanTable from '@/components/LoanTable'; // Adjust to '../../components/LoanTable' if your repo doesn't use the @ alias
 
 export default function TradeFlowDashboard() {
   const [address, setAddress] = useState("");
@@ -63,7 +66,7 @@ export default function TradeFlowDashboard() {
       </div>
 
       {/* Invoice Table */}
-      <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+      <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden mb-12">
         <div className="p-6 border-b border-slate-700">
           <h2 className="text-xl font-semibold">Verified Asset Pipeline</h2>
         </div>
@@ -96,6 +99,17 @@ export default function TradeFlowDashboard() {
           </tbody>
         </table>
       </div>
+
+      {/* Active Loans Table (Issue #6) */}
+      <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+        <div className="p-6 border-b border-slate-700">
+          <h2 className="text-xl font-semibold">Active Loans Dashboard</h2>
+        </div>
+        <div className="p-6 bg-slate-900/50">
+          <LoanTable />
+        </div>
+      </div>
+
     </div>
   );
 }
