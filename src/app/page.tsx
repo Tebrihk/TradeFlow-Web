@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { checkConnection, getPublicKey } from "@stellar/freighter-api";
-import { Wallet, PlusCircle, ShieldCheck, Landmark } from 'lucide-react';
-import LoanTable from '@/components/LoanTable'; // Adjust to '../../components/LoanTable' if your repo doesn't use the @ alias
+import { Wallet, PlusCircle, ShieldCheck, Landmark } from "lucide-react";
+import LoanTable from "../components/LoanTable";
+import useTransactionToast from "../lib/useTransactionToast";
 
-export default function TradeFlowDashboard() {
+export default function Page() {
   const [address, setAddress] = useState("");
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,7 +24,7 @@ export default function TradeFlowDashboard() {
   // 2. Fetch Invoices from your Repo 2 API
   const fetchInvoices = async () => {
     try {
-      const res = await fetch('http://localhost:3000/invoices');
+      const res = await fetch("http://localhost:3000/invoices");
       const data = await res.json();
       setInvoices(data);
     } catch (e) {
@@ -31,19 +32,30 @@ export default function TradeFlowDashboard() {
     }
   };
 
-  useEffect(() => { fetchInvoices(); }, []);
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+  const handleTestToast = () => {
+    useTransactionToast().loading();
+    useTransactionToast().success();
+    useTransactionToast().error();
+  };
 
   return (
     <div className="min-h-screen bg-slate-900 text-white p-8 font-sans">
       {/* Header */}
       <div className="flex justify-between items-center mb-12">
-        <h1 className="text-3xl font-bold tracking-tight">TradeFlow <span className="text-blue-400">RWA</span></h1>
-        <button 
+        <h1 className="text-3xl font-bold tracking-tight">
+          TradeFlow <span className="text-blue-400">RWA</span>
+        </h1>
+        <button
           onClick={connectWallet}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-full transition"
         >
           <Wallet size={18} />
-          {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Connect Wallet"}
+          {address
+            ? `${address.slice(0, 6)}...${address.slice(-4)}`
+            : "Connect Wallet"}
         </button>
       </div>
 
@@ -61,7 +73,9 @@ export default function TradeFlowDashboard() {
         </div>
         <button className="bg-blue-600/10 border-2 border-dashed border-blue-500/50 p-6 rounded-2xl flex flex-col items-center justify-center hover:bg-blue-600/20 transition">
           <PlusCircle className="text-blue-400 mb-2" size={32} />
-          <span className="font-medium text-blue-400">Mint New Invoice NFT</span>
+          <span className="font-medium text-blue-400">
+            Mint New Invoice NFT
+          </span>
         </button>
       </div>
 
@@ -81,15 +95,25 @@ export default function TradeFlowDashboard() {
           </thead>
           <tbody>
             {invoices.map((inv: any) => (
-              <tr key={inv.id} className="border-b border-slate-700/50 hover:bg-slate-700/30 transition">
-                <td className="p-4 font-mono text-sm text-blue-300">#{inv.id.slice(-6)}</td>
+              <tr
+                key={inv.id}
+                className="border-b border-slate-700/50 hover:bg-slate-700/30 transition"
+              >
+                <td className="p-4 font-mono text-sm text-blue-300">
+                  #{inv.id.slice(-6)}
+                </td>
                 <td className="p-4">
                   <div className="w-full bg-slate-700 h-2 rounded-full max-w-[100px]">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{width: `${inv.riskScore}%`}}></div>
+                    <div
+                      className="bg-blue-500 h-2 rounded-full"
+                      style={{ width: `${inv.riskScore}%` }}
+                    ></div>
                   </div>
                 </td>
                 <td className="p-4 text-sm font-medium">
-                  <span className={`px-3 py-1 rounded-full ${inv.status === 'Approved' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                  <span
+                    className={`px-3 py-1 rounded-full ${inv.status === "Approved" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}
+                  >
                     {inv.status}
                   </span>
                 </td>
@@ -110,6 +134,12 @@ export default function TradeFlowDashboard() {
         </div>
       </div>
 
+      <button
+        onClick={handleTestToast}
+        className="fixed bottom-5 right-5 bg-red-500 px-4 py-2 capitalize rounded-md"
+      >
+        Test toast
+      </button>
     </div>
   );
 }

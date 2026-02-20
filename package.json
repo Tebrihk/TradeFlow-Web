@@ -10,12 +10,14 @@
   },
   "dependencies": {
     "@stellar/freighter-api": "^1.5.0",
+    "@tailwindcss/postcss": "^4.0.0",
     "lucide-react": "^0.300.0",
     "next": "^14.2.35",
     "react": "^18",
     "react-dom": "^18",
+    "react-hot-toast": "^2.6.0",
     "soroban-client": "^1.0.0",
-    "tailwindcss": "^3.3.0"
+    "tailwindcss": "^4.0.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
@@ -23,12 +25,6 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
-    "autoprefixer": "^10.0.1",
-    "jest": "^30.2.0",
-    "jest-environment-jsdom": "^30.2.0",
-    "postcss": "^8",
-    "ts-jest": "^29.4.6",
-    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }
