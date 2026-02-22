@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { X, Upload, Calendar, DollarSign, Loader2 } from "lucide-react";
+import { X, Upload, Calendar, DollarSign } from "lucide-react";
 
 // Form validation schema
 const invoiceSchema = z.object({
@@ -40,13 +40,11 @@ type InvoiceFormData = z.infer<typeof invoiceSchema>;
 
 interface InvoiceMintFormProps {
   onClose: () => void;
-  onSubmit: (data: InvoiceFormData & { ipfsHash: string }) => void;
+  onSubmit: (data: InvoiceFormData) => void;
 }
 
 export default function InvoiceMintForm({ onClose, onSubmit }: InvoiceMintFormProps) {
   const [filePreview, setFilePreview] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [ipfsHash, setIpfsHash] = useState<string | null>(null);
 
   const {
     register,
@@ -55,70 +53,26 @@ export default function InvoiceMintForm({ onClose, onSubmit }: InvoiceMintFormPr
     setValue,
     watch,
     reset,
-    trigger,
   } = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
   });
 
   const watchedFile = watch("invoiceFile");
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setFilePreview(file.name);
       setValue("invoiceFile", file);
-      setIpfsHash(null); // Reset IPFS hash when file changes
-      
-      // Trigger validation
-      await trigger("invoiceFile");
     }
   };
 
-  const uploadToIPFS = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Upload failed');
-    }
-
-    const result = await response.json();
-    return result.ipfsHash;
+  const onFormSubmit = (data: InvoiceFormData) => {
+    console.log("Invoice minting data:", data);
+    onSubmit(data);
+    reset();
+    setFilePreview(null);
   };
-
-  const onFormSubmit = async (data: InvoiceFormData) => {
-    try {
-      setIsUploading(true);
-      
-      // Upload file to IPFS first
-      const hash = await uploadToIPFS(data.invoiceFile);
-      setIpfsHash(hash);
-      
-      // Submit form data with IPFS hash
-      onSubmit({
-        ...data,
-        ipfsHash: hash
-      });
-      
-      reset();
-      setFilePreview(null);
-      setIpfsHash(null);
-      
-    } catch (error) {
-      console.error('Error uploading to IPFS:', error);
-      // You might want to show an error toast here
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const isFormValid = !errors.amount && !errors.dueDate && !errors.invoiceFile && watchedFile;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -203,32 +157,15 @@ export default function InvoiceMintForm({ onClose, onSubmit }: InvoiceMintFormPr
                 Selected: {filePreview}
               </p>
             )}
-            {ipfsHash && (
-              <p className="mt-2 text-sm text-green-400">
-                ✓ Uploaded to IPFS: {ipfsHash.slice(0, 10)}...
-              </p>
-            )}
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={!isFormValid || isSubmitting || isUploading}
-            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800 flex items-center justify-center gap-2"
+            disabled={isSubmitting}
+            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800"
           >
-            {isUploading ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                Uploading to IPFS...
-              </>
-            ) : isSubmitting ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                Processing...
-              </>
-            ) : (
-              "Mint Invoice NFT"
-            )}
+            {isSubmitting ? "Processing..." : "Mint Invoice NFT"}
           </button>
         </form>
       </div>

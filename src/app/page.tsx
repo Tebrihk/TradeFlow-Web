@@ -4,15 +4,15 @@ import React, { useState, useEffect } from "react";
 import { checkConnection, getPublicKey } from "@stellar/freighter-api";
 import { Wallet, PlusCircle, ShieldCheck, Landmark } from "lucide-react";
 import LoanTable from "../components/LoanTable";
-import EmptyState from "../components/EmptyState";
-import InvoiceMintForm from "../components/InvoiceMintForm";
+import SkeletonRow from "../components/SkeletonRow";
 import useTransactionToast from "../lib/useTransactionToast";
+import { formatCurrency, formatDate } from "../lib/format";
 
 export default function Page() {
   const [address, setAddress] = useState("");
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [mintFormOpen, setMintFormOpen] = useState(false);
+  const [showMintForm, setShowMintForm] = useState(false);
 
   // 1. Connect Stellar Wallet (Freighter)
   const connectWallet = async () => {
@@ -26,12 +26,15 @@ export default function Page() {
 
   // 2. Fetch Invoices from your Repo 2 API
   const fetchInvoices = async () => {
+    setLoading(true);
     try {
       const res = await fetch("http://localhost:3000/invoices");
       const data = await res.json();
       setInvoices(data);
     } catch (e) {
       console.error("API not running");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,11 +48,8 @@ export default function Page() {
   };
 
   const handleInvoiceMint = (data: any) => {
-    console.log("Invoice data with IPFS hash:", data);
-    console.log("IPFS Hash:", data.ipfsHash);
-    console.log("Amount:", data.amount);
-    console.log("Due Date:", data.dueDate);
-    setMintFormOpen(false);
+    console.log("Invoice data received:", data);
+    setShowMintForm(false);
     // TODO: Chain integration will be handled separately
   };
 
@@ -84,7 +84,7 @@ export default function Page() {
           <p className="text-2xl font-semibold">$1,250,000 USDC</p>
         </div>
         <button
-          onClick={() => setMintFormOpen(true)}
+          onClick={() => setShowMintForm(true)}
           className="bg-blue-600/10 border-2 border-dashed border-blue-500/50 p-6 rounded-2xl flex flex-col items-center justify-center hover:bg-blue-600/20 transition"
         >
           <PlusCircle className="text-blue-400 mb-2" size={32} />
@@ -109,32 +109,39 @@ export default function Page() {
             </tr>
           </thead>
           <tbody>
-            {invoices.map((inv: any) => (
-              <tr
-                key={inv.id}
-                className="border-b border-slate-700/50 hover:bg-slate-700/30 transition"
-              >
-                <td className="p-4 font-mono text-sm text-blue-300">
-                  #{inv.id.slice(-6)}
-                </td>
-                <td className="p-4">
-                  <div className="w-full bg-slate-700 h-2 rounded-full max-w-[100px]">
-                    <div
-                      className="bg-blue-500 h-2 rounded-full"
-                      style={{ width: `${inv.riskScore}%` }}
-                    ></div>
-                  </div>
-                </td>
-                <td className="p-4 text-sm font-medium">
-                  <span
-                    className={`px-3 py-1 rounded-full ${inv.status === "Approved" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}
-                  >
-                    {inv.status}
-                  </span>
-                </td>
-                <td className="p-4 font-bold text-lg">${inv.amount}</td>
-              </tr>
-            ))}
+            {loading ? (
+              // Show 5 skeleton rows while loading
+              Array.from({ length: 5 }).map((_, index) => (
+                <SkeletonRow key={`skeleton-${index}`} />
+              ))
+            ) : (
+              invoices.map((inv: any) => (
+                <tr
+                  key={inv.id}
+                  className="border-b border-slate-700/50 hover:bg-slate-700/30 transition"
+                >
+                  <td className="p-4 font-mono text-sm text-blue-300">
+                    #{inv.id.slice(-6)}
+                  </td>
+                  <td className="p-4">
+                    <div className="w-full bg-slate-700 h-2 rounded-full max-w-[100px]">
+                      <div
+                        className="bg-blue-500 h-2 rounded-full"
+                        style={{ width: `${inv.riskScore}%` }}
+                      ></div>
+                    </div>
+                  </td>
+                  <td className="p-4 text-sm font-medium">
+                    <span
+                      className={`px-3 py-1 rounded-full ${inv.status === "Approved" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}
+                    >
+                      {inv.status}
+                    </span>
+                  </td>
+                  <td className="p-4 font-bold text-lg">${inv.amount}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -157,9 +164,9 @@ export default function Page() {
       </button>
 
       {/* Invoice Mint Form Modal */}
-      {mintFormOpen && (
+      {showMintForm && (
         <InvoiceMintForm
-          onClose={() => setMintFormOpen(false)}
+          onClose={() => setShowMintForm(false)}
           onSubmit={handleInvoiceMint}
         />
       )}
