@@ -5,6 +5,7 @@ import { checkConnection, getPublicKey } from "@stellar/freighter-api";
 import { Wallet, PlusCircle, ShieldCheck, Landmark } from "lucide-react";
 import LoanTable from "../components/LoanTable";
 import useTransactionToast from "../lib/useTransactionToast";
+import { formatCurrency, formatDate } from "../lib/format";
 
 export default function Page() {
   const [address, setAddress] = useState("");
@@ -117,7 +118,7 @@ export default function Page() {
                     {inv.status}
                   </span>
                 </td>
-                <td className="p-4 font-bold text-lg">${inv.amount}</td>
+                <td className="p-4 font-bold text-lg">{formatCurrency(inv.amount)}</td>
               </tr>
             ))}
           </tbody>
